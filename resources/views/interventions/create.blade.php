@@ -81,6 +81,40 @@
                 <label for="date_fin" class="form-label">Date de fin prévue (Optionnelle)</label>
                 <input type="date" id="date_fin" name="date_fin" value="{{ old('date_fin') }}" class="form-control">
             </div>
+            
+        </div>
+                <div class="form-group" style="margin-top: 1.5rem;">
+            <label class="form-label">Techniciens assignés (optionnel)</label>
+
+            @if($techniciens->isEmpty())
+                <p class="page-subtitle">Aucun technicien enregistré pour le moment.</p>
+            @else
+                <div style="border: 1px solid #e3e6ea; border-radius: 8px; max-height: 320px; overflow-y: auto;">
+                    <div style="display: grid; grid-template-columns: 2fr 1.2fr 1fr 1fr; gap: .75rem; padding: .5rem 1rem; background: #f5f6f8; font-size: .8rem; font-weight: 600;">
+                        <span>Technicien</span><span>Date</span><span>Début</span><span>Fin</span>
+                    </div>
+
+                    @foreach($techniciens as $tech)
+                        <div style="display: grid; grid-template-columns: 2fr 1.2fr 1fr 1fr; gap: .75rem; align-items: center; padding: .75rem 1rem; border-bottom: 1px solid #eef0f3;">
+                            <label style="display: flex; align-items: center; gap: .6rem; cursor: pointer;">
+                                <input type="checkbox" name="techniciens[]" value="{{ $tech->id }}"
+                                       {{ in_array($tech->id, old('techniciens', [])) ? 'checked' : '' }}>
+                                <span>
+                                    <strong>{{ $tech->prenom }} {{ $tech->nom }}</strong><br>
+                                    <small>{{ $tech->profil->libelle ?? '' }}</small>
+                                </span>
+                            </label>
+                            <input type="date" name="assign[{{ $tech->id }}][date_intervention]"
+                                   value="{{ old('assign.' . $tech->id . '.date_intervention') }}" class="form-control">
+                            <input type="time" name="assign[{{ $tech->id }}][heure_debut]"
+                                   value="{{ old('assign.' . $tech->id . '.heure_debut') }}" class="form-control">
+                            <input type="time" name="assign[{{ $tech->id }}][heure_fin]"
+                                   value="{{ old('assign.' . $tech->id . '.heure_fin') }}" class="form-control">
+                        </div>
+                    @endforeach
+                </div>
+                <small>Si la date d'un technicien est vide, la date de début de la mission est utilisée.</small>
+            @endif
         </div>
 
         <div style="margin-top: 2rem; display: flex; justify-content: flex-end; gap: 1rem;">

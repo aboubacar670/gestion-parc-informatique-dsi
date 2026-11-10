@@ -13,6 +13,7 @@ use App\Http\Controllers\ProfilController;
 use App\Http\Controllers\ExportController;
 use App\Http\Controllers\ImportController;
 use App\Http\Controllers\LocaliteController;
+use App\Http\Controllers\TechnicienController;
 
 // ─── ROUTES D'AUTHENTIFICATION ──────────────────────────────────────────
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
@@ -44,9 +45,15 @@ Route::middleware(['auth'])->group(function () {
     // Interventions / Missions
     Route::resource('interventions', InterventionController::class);
 
+    // Techniciens (Admin + Agent DSI seulement)
+    Route::resource('techniciens', TechnicienController::class);
+
     // Utilisateurs
     Route::resource('utilisateurs', UtilisateurControler::class);
 
+     //localités
+    Route::resource('localites', LocaliteController::class);
+    
     // Référentiels
     Route::get('/referentiels', [ReferentielController::class, 'index'])->name('referentiels.index');
     Route::post('/referentiels', [ReferentielController::class, 'store'])->name('referentiels.store');

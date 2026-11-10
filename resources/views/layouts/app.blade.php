@@ -65,6 +65,14 @@
                     </a>
                 </li>
                 @endif
+                @if(Auth::user()->isAdmin() || Auth::user()->isAgent())
+                    <li class="nav-item {{ Route::is('techniciens.*') ? 'active' : '' }}">
+                        <a href="{{ route('techniciens.index') }}">
+                            <i class="fa-solid fa-user-gear"></i>
+                            <span>Techniciens</span>
+                        </a>
+                    </li>
+                @endif
                 @if(Auth::user()->isAdmin())
                     <li class="nav-item {{ Route::is('utilisateurs.*') ? 'active' : '' }}">
                         <a href="{{ route('utilisateurs.index') }}">
@@ -76,12 +84,6 @@
                         <a href="{{ route('referentiels.index') }}">
                             <i class="fa-solid fa-sliders"></i>
                             <span>Référentiels</span>
-                        </a>
-                    </li>
-                    <li class="nav-item {{ Route::is('localites.*') ? 'active' : '' }}">
-                        <a href="{{ route('localites.index') }}">
-                            <i class="fas fa-map-marker-alt"></i>
-                            <span>Localités</span>
                         </a>
                     </li>
                 @endif
@@ -197,6 +199,7 @@
     <!-- Leaflet Map JS CDN -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
     
+    @stack('scripts')
     @yield('scripts')
     <script>
         // ─── Restore Sidebar State On Load ───────────────────────────────────────

@@ -18,6 +18,8 @@ use App\Models\Equipement;
 use App\Models\Incident;
 use App\Models\Intervention;
 use App\Models\User;
+use App\Models\ProfilTechnicien;
+use App\Models\Technicien;
 
 class DatabaseSeeder extends Seeder
 {
@@ -296,7 +298,39 @@ class DatabaseSeeder extends Seeder
             'structure_id'           => $lyceeBobo->id,
         ]);
 
-        // ─── 14. Utilisateurs de test ─────────────────────────────────────────
+        // ─── 14. Profils et Techniciens ───────────────────────────────────────
+
+        $profilReseau  = ProfilTechnicien::create(['libelle' => 'Technicien Réseau']);
+        $profilPoste   = ProfilTechnicien::create(['libelle' => 'Technicien Poste de travail']);
+        $profilSysAdmin = ProfilTechnicien::create(['libelle' => 'Administrateur Système']);
+        $profilSupport = ProfilTechnicien::create(['libelle' => 'Support utilisateur']);
+
+        $tech1 = Technicien::create([
+            'nom'                  => 'SAWADOGO',
+            'prenom'               => 'Moussa',
+            'telephone'            => '+226 70 11 22 33',
+            'profil_technicien_id' => $profilReseau->id,
+        ]);
+        $tech2 = Technicien::create([
+            'nom'                  => 'OUEDRAOGO',
+            'prenom'               => 'Rasmané',
+            'telephone'            => '+226 76 44 55 66',
+            'profil_technicien_id' => $profilPoste->id,
+        ]);
+        $tech3 = Technicien::create([
+            'nom'                  => 'KABORE',
+            'prenom'               => 'Adama',
+            'telephone'            => '+226 65 77 88 99',
+            'profil_technicien_id' => $profilSysAdmin->id,
+        ]);
+        $tech4 = Technicien::create([
+            'nom'                  => 'TIENDREBEOGO',
+            'prenom'               => 'Aïcha',
+            'telephone'            => '+226 71 00 11 22',
+            'profil_technicien_id' => $profilSupport->id,
+        ]);
+
+        // ─── 15. Utilisateurs de test ─────────────────────────────────────────
 
         User::create([
             'role_id'       => $roleAdmin->id,

@@ -5,7 +5,7 @@
 @section('content')
 <div class="top-bar">
     <div>
-        <h1 class="page-title">Interventions &amp; Maintenance</h1>
+        <h1 class="page-title">Interventions & Maintenance</h1>
         <p class="page-subtitle">Suivi et planification des missions de support technique</p>
     </div>
     @if(Auth::user()->isAdmin() || Auth::user()->isAgent())
@@ -81,8 +81,9 @@
                     <tr>
                         <th>Code</th>
                         <th>Libellé / Titre de la mission</th>
-                        <th>Type d'intervention</th>
+                        <th>Type</th>
                         <th>Structure / Site</th>
+                        <th>Technicien(s)</th>
                         <th>Date début</th>
                         <th>Date fin</th>
                         <th>Statut</th>
@@ -116,6 +117,35 @@
                                     <span style="color: var(--text-muted);">Non spécifié</span>
                                 @endif
                             </td>
+
+                            {{-- ─── Colonne Techniciens avec popover ─── --}}
+                            <td>
+                                @if($int->techniciens->isEmpty())
+                                    <span style="color: var(--text-muted); font-style: italic; font-size: .85rem;">—</span>
+                                @else
+                                    <div style="display: flex; flex-wrap: wrap; gap: .3rem;">
+                                        @foreach($int->techniciens as $tech)
+                                            @php
+                                                $pivot = $tech->pivot;
+                                                $dateAff = $pivot->date_intervention
+                                                    ? \Carbon\Carbon::parse($pivot->date_intervention)->format('d/m/Y')
+                                                    : '—';
+                                                $hDebut = $pivot->heure_debut ?? '—';
+                                                $hFin   = $pivot->heure_fin   ?? '—';
+                                                $tooltipText = "{$tech->prenom} {$tech->nom} | {$dateAff} | {$hDebut} → {$hFin}";
+                                            @endphp
+                                            <span class="badge badge-info tech-badge"
+                                                  style="cursor: pointer; font-size: .72rem; position: relative;"
+                                                  title="{{ $tooltipText }}"
+                                                  data-tooltip="{{ $tooltipText }}">
+                                                <i class="fa-solid fa-user-gear"></i>
+                                                {{ $tech->prenom }} {{ $tech->nom }}
+                                            </span>
+                                        @endforeach
+                                    </div>
+                                @endif
+                            </td>
+
                             <td>{{ \Carbon\Carbon::parse($int->date_debut)->format('d/m/Y') }}</td>
                             <td>
                                 {{ $int->date_fin ? \Carbon\Carbon::parse($int->date_fin)->format('d/m/Y') : '-' }}
@@ -160,4 +190,48 @@
         </div>
     @endif
 </div>
+
+{{-- Popover/Tooltip pour les badges techniciens --}}
+@push('scripts')
+<style>
+.tech-badge {
+    position: relative;
+}
+.tech-badge::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: calc(100% + 6px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1e2435;
+    color: #fff;
+    font-size: .75rem;
+    white-space: nowrap;
+    padding: .35rem .65rem;
+    border-radius: 6px;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity .18s ease;
+    z-index: 999;
+    box-shadow: 0 4px 12px rgba(0,0,0,.25);
+}
+.tech-badge::before {
+    content: '';
+    position: absolute;
+    bottom: calc(100% + 1px);
+    left: 50%;
+    transform: translateX(-50%);
+    border: 5px solid transparent;
+    border-top-color: #1e2435;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity .18s ease;
+    z-index: 999;
+}
+.tech-badge:hover::after,
+.tech-badge:hover::before {
+    opacity: 1;
+}
+</style>
+@endpush
 @endsection

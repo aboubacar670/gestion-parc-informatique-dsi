@@ -7,14 +7,14 @@ use App\Models\Structure;
 use App\Models\TypeIntervention;
 use App\Models\StatutIntervention;
 use Illuminate\Http\Request;
+use App\Models\Technicien;
 
 class InterventionController extends Controller
 {
     /** Liste les interventions */
     public function index(Request $request)
     {
-        $query = Intervention::with(['structure', 'typeIntervention', 'statutIntervention']);
-
+      $query = Intervention::with(["structure", "typeIntervention", "statutIntervention", "techniciens"]);
         if ($request->filled('structure_id')) {
             $query->where('structure_id', $request->structure_id);
         }
@@ -35,7 +35,7 @@ class InterventionController extends Controller
             });
         }
 
-        $interventions       = $query->latest('date_debut')->paginate(15)->withQueryString();
+        $interventions    = $query->latest('date_debut')->paginate(15)->withQueryString();
         $structures         = Structure::orderBy('nom')->get();
         $typesIntervention   = TypeIntervention::orderBy('libelle')->get();
         $statutsIntervention = StatutIntervention::orderBy('libelle')->get();
@@ -51,8 +51,10 @@ class InterventionController extends Controller
         $structures         = Structure::orderBy('nom')->get();
         $typesIntervention   = TypeIntervention::orderBy('libelle')->get();
         $statutsIntervention = StatutIntervention::orderBy('libelle')->get();
+        $techniciens = Technicien::with('profil')->orderBy('nom')->get();
 
-        return view('interventions.create', compact('structures', 'typesIntervention', 'statutsIntervention'));
+        return view("interventions.create", compact("structures", "typesIntervention", "statutsIntervention", "techniciens"));
+
     }
 
     /** Enregistre une intervention */
@@ -78,7 +80,8 @@ class InterventionController extends Controller
         $count = Intervention::count() + 1;
         $validated['code'] = 'INT-' . now()->year . '-' . str_pad($count, 3, '0', STR_PAD_LEFT);
 
-        Intervention::create($validated);
+        $intervention = Intervention::create($validated);
+        $this->syncTechniciens($request, $intervention);
 
         return redirect()->route('interventions.index')
             ->with('success', 'Intervention "' . $validated['libelle'] . '" planifiée avec succès !');
@@ -90,9 +93,10 @@ class InterventionController extends Controller
         $structures         = Structure::orderBy('nom')->get();
         $typesIntervention   = TypeIntervention::orderBy('libelle')->get();
         $statutsIntervention = StatutIntervention::orderBy('libelle')->get();
+        $techniciens = Technicien::with('profil')->orderBy('nom')->get();
+        $intervention->load('techniciens');
 
-        return view('interventions.edit', compact('intervention', 'structures', 'typesIntervention', 'statutsIntervention'));
-    }
+        return view("interventions.edit", compact("intervention", "structures", "typesIntervention", "statutsIntervention", "techniciens"));    }
 
     /** Met à jour une intervention */
     public function update(Request $request, Intervention $intervention)
@@ -109,6 +113,7 @@ class InterventionController extends Controller
         ]);
 
         $intervention->update($validated);
+        $this->syncTechniciens($request, $intervention);
 
         return redirect()->route('interventions.index')
             ->with('success', 'Intervention mise à jour avec succès !');
@@ -123,4 +128,28 @@ class InterventionController extends Controller
         return redirect()->route('interventions.index')
             ->with('success', 'Intervention "' . $libelle . '" supprimée avec succès.');
     }
+
+    /** Enregistre les techniciens assignés, avec leur date et leurs heures. */
+    private function syncTechniciens(Request $request, Intervention $intervention): void
+{
+    $request->validate([
+        'techniciens'                => ['nullable', 'array'],
+        'techniciens.*'              => ['exists:techniciens,id'],
+        'assign.*.date_intervention' => ['nullable', 'date'],
+        'assign.*.heure_debut'       => ['nullable', 'date_format:H:i'],
+        'assign.*.heure_fin'         => ['nullable', 'date_format:H:i'],
+    ]);
+
+    $data = [];
+    foreach ($request->input('techniciens', []) as $id) {
+        $a = $request->input("assign.$id", []);
+        $data[$id] = [
+            'date_intervention' => $a['date_intervention'] ?? $intervention->date_debut,
+            'heure_debut'       => $a['heure_debut'] ?? null,
+            'heure_fin'         => $a['heure_fin'] ?? null,
+        ];
+    }
+
+    $intervention->techniciens()->sync($data);
+}
 }

@@ -35,4 +35,10 @@ class Intervention extends Model
     {
         return $this->belongsTo(StatutIntervention::class);
     }
+    public function techniciens()
+    {
+        return $this->belongsToMany(Technicien::class, 'intervention_technicien')
+                    ->withPivot('date_intervention', 'heure_debut', 'heure_fin')
+                    ->withTimestamps();
+    }
 }

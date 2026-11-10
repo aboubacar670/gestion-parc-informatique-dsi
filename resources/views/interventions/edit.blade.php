@@ -84,6 +84,73 @@
             </div>
         </div>
 
+        {{-- ─── Section Techniciens ───────────────────────────────────── --}}
+        <div class="form-group" style="margin-top: 1.5rem;">
+            <label class="form-label">Techniciens assignés <span style="color: var(--text-muted); font-weight: 400;">(optionnel)</span></label>
+
+            @php
+                // Récupère les techniciens déjà assignés avec leurs données pivot
+                $assignes = $intervention->techniciens->keyBy('id');
+            @endphp
+
+            @if($techniciens->isEmpty())
+                <p class="page-subtitle">
+                    <i class="fa-solid fa-circle-info"></i>
+                    Aucun technicien enregistré. 
+                    <a href="{{ route('techniciens.create') }}">Ajouter un technicien</a>
+                </p>
+            @else
+                <div style="border: 1px solid #e3e6ea; border-radius: 8px; overflow: hidden;">
+                    <div style="display: grid; grid-template-columns: 2fr 1.2fr 1fr 1fr; gap: .75rem; padding: .6rem 1rem; background: #f5f6f8; font-size: .78rem; font-weight: 600; color: var(--text-secondary);">
+                        <span>Technicien</span>
+                        <span>Date intervention</span>
+                        <span>Heure début</span>
+                        <span>Heure fin</span>
+                    </div>
+
+                    @foreach($techniciens as $tech)
+                        @php
+                            $pivot = $assignes->get($tech->id)?->pivot ?? null;
+                            $isChecked = $assignes->has($tech->id);
+                        @endphp
+                        <div class="technicien-row {{ $isChecked ? 'row-checked' : '' }}"
+                             style="display: grid; grid-template-columns: 2fr 1.2fr 1fr 1fr; gap: .75rem; align-items: center; padding: .75rem 1rem; border-top: 1px solid #eef0f3; transition: background .15s;">
+                            
+                            <label style="display: flex; align-items: center; gap: .6rem; cursor: pointer; margin: 0;">
+                                <input type="checkbox" name="techniciens[]" value="{{ $tech->id }}"
+                                       class="tech-checkbox"
+                                       data-row="{{ $tech->id }}"
+                                       {{ $isChecked || in_array($tech->id, old('techniciens', [])) ? 'checked' : '' }}>
+                                <span>
+                                    <strong>{{ $tech->prenom }} {{ $tech->nom }}</strong><br>
+                                    <small style="color: var(--text-muted);">{{ $tech->profil->libelle ?? '—' }}</small>
+                                </span>
+                            </label>
+
+                            <input type="date" name="assign[{{ $tech->id }}][date_intervention]"
+                                   value="{{ old('assign.' . $tech->id . '.date_intervention', $pivot?->date_intervention ?? '') }}"
+                                   class="form-control tech-field-{{ $tech->id }}"
+                                   {{ !$isChecked && !in_array($tech->id, old('techniciens', [])) ? 'disabled' : '' }}>
+
+                            <input type="time" name="assign[{{ $tech->id }}][heure_debut]"
+                                   value="{{ old('assign.' . $tech->id . '.heure_debut', $pivot?->heure_debut ?? '') }}"
+                                   class="form-control tech-field-{{ $tech->id }}"
+                                   {{ !$isChecked && !in_array($tech->id, old('techniciens', [])) ? 'disabled' : '' }}>
+
+                            <input type="time" name="assign[{{ $tech->id }}][heure_fin]"
+                                   value="{{ old('assign.' . $tech->id . '.heure_fin', $pivot?->heure_fin ?? '') }}"
+                                   class="form-control tech-field-{{ $tech->id }}"
+                                   {{ !$isChecked && !in_array($tech->id, old('techniciens', [])) ? 'disabled' : '' }}>
+                        </div>
+                    @endforeach
+                </div>
+                <small style="color: var(--text-muted);">
+                    <i class="fa-solid fa-circle-info"></i>
+                    Cochez un technicien pour activer ses champs. Si la date est vide, la date de début de la mission est utilisée.
+                </small>
+            @endif
+        </div>
+
         <div style="margin-top: 2rem; display: flex; justify-content: flex-end; gap: 1rem;">
             <a href="{{ route('interventions.index') }}" class="btn btn-secondary">
                 Annuler
@@ -95,4 +162,26 @@
 
     </form>
 </div>
+
+@push('scripts')
+<style>
+    .row-checked { background-color: hsl(var(--primary) / .05); }
+    .tech-field-disabled { opacity: .4; pointer-events: none; }
+</style>
+<script>
+document.querySelectorAll('.tech-checkbox').forEach(function(cb) {
+    cb.addEventListener('change', function() {
+        const id = this.dataset.row;
+        const fields = document.querySelectorAll('.tech-field-' + id);
+        const row = this.closest('.technicien-row');
+        fields.forEach(f => f.disabled = !this.checked);
+        if (this.checked) {
+            row.style.backgroundColor = 'hsl(var(--primary) / .05)';
+        } else {
+            row.style.backgroundColor = '';
+        }
+    });
+});
+</script>
+@endpush
 @endsection

@@ -23,6 +23,7 @@ $sections = [
     ['label' => "Types d'interventions",  'type' => 'type_intervention',   'items' => $typesInterventions],
     ['label' => "Statuts d'incidents",    'type' => 'statut_incident',     'items' => $statutsIncidents],
     ['label' => "Statuts d'interventions",'type' => 'statut_intervention', 'items' => $statutsInterventions],
+    ['label' => "Profils Techniciens",    'type' => 'profil_technicien',   'items' => $profilsTechniciens],
 ];
 @endphp
 

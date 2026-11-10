@@ -11,6 +11,7 @@ use App\Models\TypeIntervention;
 use App\Models\StatutIncident;
 use App\Models\StatutIntervention;
 use App\Models\Localite;
+use App\Models\ProfilTechnicien;
 class ReferentielController extends Controller
 {
     public function index()
@@ -24,6 +25,7 @@ class ReferentielController extends Controller
             'typesInterventions'   => TypeIntervention::all(),
             'statutsIncidents'     => StatutIncident::all(),
             'statutsInterventions' => StatutIntervention::all(),
+            'profilsTechniciens'   => ProfilTechnicien::withCount('techniciens')->orderBy('libelle')->get(),
         ]);
     }
 
@@ -61,6 +63,7 @@ class ReferentielController extends Controller
             'type_intervention'    => TypeIntervention::class,
             'statut_incident'      => StatutIncident::class,
             'statut_intervention'  => StatutIntervention::class,
+            'profil_technicien'    => ProfilTechnicien::class,
             default => abort(404),
         };
     }

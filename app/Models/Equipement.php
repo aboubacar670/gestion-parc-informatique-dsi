@@ -30,18 +30,20 @@ class Equipement extends Model
         return $this->belongsTo(TypeEquipement::class);
     }
 
-    /** L'équipement a un état courant */
+    /** L'équipement a un état courant (état général de l'équipement) */
     public function etatEquipement()
     {
         return $this->belongsTo(EtatEquipement::class);
     }
 
     /**
-     * Un équipement peut être impliqué dans plusieurs incidents (Many-to-Many).
-     * Table pivot : equipement_incident
+     * Un équipement peut être concerné par plusieurs incidents (Many-to-Many).
+     * Le pivot contient etat_equipement_id (état au moment de l'incident).
      */
     public function incidents()
     {
-        return $this->belongsToMany(Incident::class, 'equipement_incident');
+        return $this->belongsToMany(Incident::class, 'equipement_incident')
+                    ->withPivot('etat_equipement_id')
+                    ->withTimestamps();
     }
 }
